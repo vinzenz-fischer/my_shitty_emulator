@@ -1,3 +1,3 @@
 mod emulator;
 
-pub use emulator::{Emulator, Instruction};
+pub use emulator::{Emulator, Instruction, Program};

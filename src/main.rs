@@ -1,9 +1,11 @@
-use my_shitty_emulator::{Emulator, Instruction};
+use my_shitty_emulator::{Emulator, Instruction, Program};
 
 fn main() {
     let mut emulator = Emulator::new(u8::MAX, 8);
 
     println!("Writing program to memory...");
+    let mut program = Program::new();
+    /*
     // Use register 0 as stack pointer
     emulator.memory[0] = Instruction::SETV.to_byte();
     emulator.memory[1] = 0; // register a
@@ -178,12 +180,12 @@ fn main() {
     emulator.memory[98] = 120; // value b
 
     // print string
-    emulator.memory[99] = Instruction::SYSCALL.to_byte();
+    emulator.memory[99] = Instruction::DEBUG.to_byte();
     emulator.memory[100] = 0; // register a
     emulator.memory[101] = 1; // register b
 
     emulator.memory[102] = Instruction::HALT.to_byte();
-
+    */
     println!("Go!");
     while !emulator.is_halted {
         emulator.step();

@@ -1,0 +1,27 @@
+SETV 0 120  // Use register 0 as stack pointer
+SETV 1 11   // Register 1 = string length
+PUSH 1
+SETV 1 72   // R01 = 72 (ascii 'H')
+PUSH 1
+SETV 1 101  // R01 = 101 (ascii 'e')
+PUSH 1
+SETV 1 108  // R01 = 108 (ascii 'l')
+PUSH 1
+PUSH 1      // two `PUSH`s, because "Hello" has two "l"s
+SETV 1 111  // R01 = 111 (ascii 'o')
+PUSH 1
+SETV 1 32   // R01 = 32 (ascii ' ')
+PUSH 1
+SETV 1 119  // R01 = 119 (ascii 'w')
+PUSH 1
+SETV 1 111  // R01 = 111 (ascii 'o')
+PUSH 1
+SETV 1 114  // R01 = 114 (ascii 'r')
+PUSH 1
+SETV 1 108  // R01 = 108 (ascii 'l')
+PUSH 1
+SETV 1 100  // R01 = 100 (ascii 'd')
+PUSH 1
+SETV 1 120  // R01 = 120
+SYSCALL 0 1 // print
+HALT
