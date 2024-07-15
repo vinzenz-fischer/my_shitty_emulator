@@ -1,42 +1,42 @@
 # My shitty emulator
 My own emulator! :D
 
+## Registers
+|     Name      | Purpose         | Size |
+| :-----------: | :-------------- | ---: |
+|     `RPC`     | Program Counter |    8 |
+|     `RSP`     | Stack Pointer   |    8 |
+| `R00` - `R15` | General Purpose |    8 |
+
 ## My own Assembly Language
-### Syntax
-`<instruction> <a> <b>`
+* Syntax: `<instruction> <src> <dst>`
 
-### Registers
-|     Name      | Purpose                  | Size |
-| :-----------: | :----------------------- | ---: |
-|     `RPC`     | Program Counter Register |    8 |
-|     `RIN`     | Instruction Register     |    8 |
-| `R00` - `R15` | General Purpose          |    8 |
-
-### Instructions
-|   Name    | Description                                                      |  Op Code   | Notes             |
-| :-------: | :--------------------------------------------------------------- | :--------: | :---------------- |
-|  `NOOP`   | Does nothing                                                     | `00000000` |                   |
-|  `HALT`   | Stops the program                                                | `00000001` |                   |
-|  `SETV`   | register `a` <- given value `b`                                  | `00000010` | `b` is only 8-bit |
-|  `SETR`   | register `a` <- value in register `b`                            | `00000011` |                   |
-|  `SETA`   | register `a` <- value at address `b`                             | `00000100` |                   |
-| `SYSCALL` | Performs a system call (we'll figure that out later)             | `00000101` |                   |
-|  `SMEM`   | value at address `a` <- value in register `b`                    | `00000111` | almost forgor     |
-|           |                                                                  |            |                   |
-|   `MOD`   | register `a` <- value in register `a` %    value in register `b` | `00010000` |                   |
-|   `ADD`   | register `a` <- value in register `a` +    value in register `b` | `00010001` |                   |
-|   `MUL`   | register `a` <- value in register `a` *    value in register `b` | `00010010` |                   |
-|   `AND`   | register `a` <- value in register `a` AND  value in register `b` | `00010011` |                   |
-|   `OR`    | register `a` <- value in register `a` OR   value in register `b` | `00010100` |                   |
-|   `XOR`   | register `a` <- value in register `a` XOR  value in register `b` | `00010101` |                   |
-|   `INC`   | register `a` <- value in register `a` + 1                        | `00010110` |                   |
-|   `BSL`   | register `a` <- value in register `a` << value in register `b`   | `00010111` |                   |
-|           |                                                                  |            |                   |
-|   `NOT`   | register `a` <- Bitwise NOT value in register `a`                | `00011000` |                   |
-|   `SUB`   | register `a` <- value in register `a` -    value in register `b` | `00011001` |                   |
-|   `DIV`   | register `a` <- value in register `a` /    value in register `b` | `00011010` | floor division    |
-|  `NAND`   | register `a` <- value in register `a` NAND value in register `b` | `00011011` |                   |
-|   `NOR`   | register `a` <- value in register `a` NOR  value in register `b` | `00011100` |                   |
-|  `XNOR`   | register `a` <- value in register `a` XNOR value in register `b` | `00011101` |                   |
-|   `DEC`   | register `a` <- value in register `a` - 1                        | `00011110` |                   |
-|   `BSR`   | register `a` <- value in register `a` >> value in register `b`   | `00011111` |                   |
+|  Name   | Description                                   | Notes          |
+| :-----: | :-------------------------------------------- | :------------- |
+| `DEBUG` | Debug call `dst` `src`                        |                |
+| `NOOP`  | Does nothing                                  |                |
+| `HALT`  | Stops the program                             |                |
+| `MOVE`  | reg. `dst` <- val./reg. `src`                 |                |
+| `LMEM`  | reg. `dst` <- memory `src`                    |                |
+| `SMEM`  | memory `dst` <- val./reg. `src`               |                |
+| `PUSH`  | `INC RSP`, memory `RSP` <- reg. `dst`         |                |
+| `PUSH`  | `INC RSP`, memory `RSP` <- val. `dst`         |                |
+|  `POP`  | reg. `dst` <- memory `RSP`, `DEC RSP`         |                |
+|         |                                               |                |
+|  `MOD`  | reg. `dst` <- reg. `dst` %    val./reg. `src` |                |
+|  `ADD`  | reg. `dst` <- reg. `dst` +    val./reg. `src` |                |
+|  `MUL`  | reg. `dst` <- reg. `dst` *    val./reg. `src` |                |
+|  `AND`  | reg. `dst` <- reg. `dst` AND  val./reg. `src` |                |
+|  `OR`   | reg. `dst` <- reg. `dst` OR   val./reg. `src` |                |
+|  `XOR`  | reg. `dst` <- reg. `dst` XOR  val./reg. `src` |                |
+|  `BSL`  | reg. `dst` <- reg. `dst` <<   val./reg. `src` |                |
+|  `INC`  | reg. `dst` <- reg. `dst` + 1                  |                |
+|         |                                               |                |
+|  `NOT`  | reg. `dst` <- Bitwise NOT reg. `dst`          |                |
+|  `SUB`  | reg. `dst` <- reg. `dst` -    val./reg. `src` |                |
+|  `DIV`  | reg. `dst` <- reg. `dst` /    val./reg. `src` | floor division |
+| `NAND`  | reg. `dst` <- reg. `dst` NAND val./reg. `src` |                |
+|  `NOR`  | reg. `dst` <- reg. `dst` NOR  val./reg. `src` |                |
+| `XNOR`  | reg. `dst` <- reg. `dst` XNOR val./reg. `src` |                |
+|  `BSR`  | reg. `dst` <- reg. `dst` >> val./reg. `src`   |                |
+|  `DEC`  | reg. `dst` <- reg. `dst` - 1                  |                |
