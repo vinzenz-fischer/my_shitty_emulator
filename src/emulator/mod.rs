@@ -1,4 +1,3 @@
-
 pub struct Emulator {
     pub memory: Vec<u8>,
     registers: Vec<u8>,
@@ -9,14 +8,21 @@ pub struct Emulator {
 
 impl Emulator {
     /// Creates a new emulator with memory of `ram_size` bytes and `gp_register_count` general purpose registers.
-    pub fn new(ram_size: u8, gp_register_count: u8) -> Self {
+    pub fn new(ram_size: u8) -> Self {
         assert!(ram_size > 0, "RAM size must be greater than 0");
         Self {
             memory: vec![0; ram_size as usize],
-            registers: vec![0; gp_register_count as usize],
-            program_counter: 0,
-            stack_pointer: 0,
+            registers: vec![0; 16],
+            program_counter: 0, // TODO: Make part in `registers`
+            stack_pointer: 0,   // TODO: Make part in `registers`
             is_halted: false,
+        }
+    }
+
+    pub fn load_program(&mut self, program: Program) {
+        for byte in program.get_bytecode() {
+            self.memory[self.stack_pointer as usize] = *byte;
+            self.stack_pointer += 1;
         }
     }
     
@@ -28,37 +34,33 @@ impl Emulator {
         
         self.program_counter += match instruction {
             NOOP => 1,
-            HALT => {
-                self.is_halted = true;
-                0
-            },
-            MOVE_LITERAL => { self.registers[src as usize] = dst; 3 }
+            HALT => { self.is_halted = true; 0 },
+            MOVE_LITERAL  => { self.registers[src as usize] = dst; 3 }
             MOVE_REGISTER => { self.registers[src as usize] = self.registers[dst as usize]; 3 }
-            LOAD_MEMORY => { self.registers[src as usize] = self.memory[dst as usize] as u8; 3 }
+            LOAD_MEMORY   => { self.registers[src as usize] = self.memory[dst as usize] as u8; 3 }
             DEBUG => {
+                print!("[DEBUG] ");
                 match src {
-                    0 => { // Print: `b` points to an array of chars (0th byte is length)
-                        println!("[DEBUG] print b = {}", dst);
-                        let start = self.registers[dst as usize];
-                        let length = self.memory[start as usize];
+                    0 => { // Print: `dst` points to an array of chars (0th byte is length)
+                        print!("[PRINT] Address: {} \"", dst);
+                        let length = self.memory[dst as usize];
                         for i in 1..=length {
-                            print!("{}", self.memory[(start + i) as usize] as char);
+                            print!("{}", self.memory[(dst + i) as usize] as char);
                         }
-                        println!("");
+                        print!("\"");
                     }
                     _ => {
-                        println!("[DEBUG] Unknown Debug: {}", src);
+                        print!("Unknown Debug: {}", src);
                     }
                 };
+                println!();
                 3
             }
             STORE_LITERAL => {
-                println!("[SMEM] memory[{}] = {}", self.registers[src as usize], dst);
                 self.memory[self.registers[src as usize] as usize] = dst;
                 3
             }
             STORE_REGISTER => {
-                println!("[SMEM] memory[{}] = {}", self.registers[src as usize], self.registers[dst as usize]);
                 self.memory[self.registers[src as usize] as usize] = self.registers[dst as usize];
                 3
             }
@@ -124,11 +126,27 @@ impl Emulator {
             _ => { panic!("Unknown instruction: {}", instruction) }
         };
     }
+    
+    /// Very crude debugging.
+    pub fn print_memory(&self) {
+        let mut skipped = false;
+        for i in 0..self.memory.len() {
+            match self.memory[i] {
+                0 => {
+                    if !skipped {
+                        println!();
+                    }
+                    skipped = true;
+                },
+                _ => println!("memory[{:3}] {}", i, self.memory[i]),
+            }
+        }
+    }
 }
 
-// GOD IS THERE NOT A BETTER WAY?
-// The first bit is used to indicate whether the given instruction takes a literal value or a register. (only one argument can optionally be a literal value)
-// The third bit is used to indicate that the given instruction is an inverse operation (of the instruction which - except for this bit - has the same opcode).
+// Opcodes
+// TODO: The opcodes will need some changing before we can properly emulate a CPU
+// TODO: Look for a way to group these constants together
 const NOOP         : u8 = 0b0000_0000; const HALT          : u8 = 0b0000_0001;
 const MOVE_LITERAL : u8 = 0b0000_0011; const MOVE_REGISTER : u8 = 0b0000_0010;
 const STORE_LITERAL: u8 = 0b0000_0100; const STORE_REGISTER: u8 = 0b0000_0101;
@@ -162,11 +180,23 @@ impl Program {
     pub fn new() -> Self {
         Self { bytecode: vec![] }
     }
+
+    pub fn from_instructions(instructions: Vec<Instruction>) -> Self {
+        let mut program = Program::new();
+        for instruction in instructions {
+            program.add_instruction(instruction);
+        }
+        program
+    }
     
     pub fn add_instruction(&mut self, instruction: Instruction) {
         for byte in instruction.assemble() {
             self.bytecode.push(byte);
         }
+    }
+
+    pub fn get_bytecode(&self) -> &Vec<u8> {
+        &self.bytecode
     }
 }
 
@@ -176,27 +206,107 @@ pub enum Arg {
 }
 
 pub enum Instruction {
-    DEBUG(u8, u8), // used for debugging, obviously (duh)
-    NOOP, HALT,
-    MOVE(Arg, u8),
-    SMEM(Arg, u8), LMEM(u8, Arg),
-    PUSH(u8), POP (u8),
-    CALL(u8), RET,
-    JUMP(Arg),
-    MOD (Arg, Arg), NOT (u8),
+    DEBUG(u8, u8), // print out stuff for example
+    NOOP,           HALT,
+    MOVE(Arg, u8 ),
+    SMEM(Arg, u8 ), LMEM(Arg, u8),
+    PUSH(Arg     ), POP (u8  ),
+    CALL(u8      ), RET,
+    JUMP(Arg     ),
+    MOD (Arg, u8 ), NOT (u8     ),
     ADD (Arg, u8 ), SUB (Arg, u8),
     MUL (Arg, u8 ), DIV (Arg, u8),
     AND (Arg, u8 ), NAND(Arg, u8),
     OR  (Arg, u8 ), NOR (Arg, u8),
     XOR (Arg, u8 ), XNOR(Arg, u8),
-    INC (Arg, u8 ), DEC (Arg, u8),
     BSL (Arg, u8 ), BSR (Arg, u8),
+    INC (u8      ), DEC (u8     ),
 }
 
 impl Instruction {
     pub fn assemble(&self) -> Vec<u8> {
         match self {
-            _ => todo!()
+            Instruction::DEBUG(a, b) => vec![DEBUG, *a, *b],
+            Instruction::NOOP => vec![NOOP],
+            Instruction::HALT => vec![HALT],
+            Instruction::MOVE(src, dst) => match src {
+                Arg::Register(reg) => vec![MOVE_REGISTER, *reg, *dst],
+                Arg::Value(val) => vec![MOVE_LITERAL, *val, *dst],
+            }
+            Instruction::SMEM(src, dst) => match src {
+                Arg::Register(reg) => vec![STORE_REGISTER, *reg, *dst],
+                Arg::Value(val) => vec![STORE_LITERAL, *val, *dst],
+            }
+            Instruction::LMEM(src, dst) => match src {
+                Arg::Register(reg) => vec![LOAD_MEMORY, *reg, *dst],
+                Arg::Value(val) => vec![LOAD_MEMORY, *val, *dst],
+            }
+            Instruction::PUSH(src) => match src {
+                Arg::Register(reg) => vec![PUSH_REGISTER, *reg],
+                Arg::Value(val) => vec![PUSH_LITERAL, *val],
+            }
+            Instruction::POP(src) => vec![POP, *src],
+            Instruction::CALL(src) => vec![CALL, *src],
+            Instruction::RET => vec![RETURN],
+            Instruction::JUMP(src) => match src {
+                Arg::Register(reg) => vec![JUMP_REGISTER, *reg],
+                Arg::Value(val) => vec![JUMP_LITERAL, *val],
+            }
+            Instruction::MOD(src, dst) => match src {
+                Arg::Register(reg) => vec![MOD_REGISTER, *reg, *dst],
+                Arg::Value(val) => vec![MOD_LITERAL, *val, *dst],
+            }
+            Instruction::NOT(src) => vec![NOT, *src],
+            Instruction::ADD(src, dst) => match src {
+                Arg::Register(reg) => vec![ADD_REGISTER, *reg, *dst],
+                Arg::Value(val) => vec![ADD_LITERAL, *val, *dst],
+            }
+            Instruction::SUB(src, dst) => match src {
+                Arg::Register(reg) => vec![SUB_REGISTER, *reg, *dst],
+                Arg::Value(val) => vec![SUB_LITERAL, *val, *dst],
+            }
+            Instruction::MUL(src, dst) => match src {
+                Arg::Register(reg) => vec![MUL_REGISTER, *reg, *dst],
+                Arg::Value(val) => vec![MUL_LITERAL, *val, *dst],
+            }
+            Instruction::DIV(src, dst) => match src {
+                Arg::Register(reg) => vec![DIV_REGISTER, *reg, *dst],
+                Arg::Value(val) => vec![DIV_LITERAL, *val, *dst],
+            }
+            Instruction::AND(src, dst) => match src {
+                Arg::Register(reg) => vec![AND_REGISTER, *reg, *dst],
+                Arg::Value(val) => vec![AND_LITERAL, *val, *dst],
+            }
+            Instruction::NAND(src, dst) => match src {
+                Arg::Register(reg) => vec![NAND_REGISTER, *reg, *dst],
+                Arg::Value(val) => vec![NAND_LITERAL, *val, *dst],
+            }
+            Instruction::OR(src, dst) => match src {
+                Arg::Register(reg) => vec![OR_REGISTER, *reg, *dst],
+                Arg::Value(val) => vec![OR_LITERAL, *val, *dst],
+            }
+            Instruction::NOR(src, dst) => match src {
+                Arg::Register(reg) => vec![NOR_REGISTER, *reg, *dst],
+                Arg::Value(val) => vec![NOR_LITERAL, *val, *dst],
+            }
+            Instruction::XOR(src, dst) => match src {
+                Arg::Register(reg) => vec![XOR_REGISTER, *reg, *dst],
+                Arg::Value(val) => vec![XOR_LITERAL, *val, *dst],
+            }
+            Instruction::XNOR(src, dst) => match src {
+                Arg::Register(reg) => vec![XNOR_REGISTER, *reg, *dst],
+                Arg::Value(val) => vec![XNOR_LITERAL, *val, *dst],
+            }
+            Instruction::BSL(src, dst) => match src {
+                Arg::Register(reg) => vec![BSL_REGISTER, *reg, *dst],
+                Arg::Value(val) => vec![BSL_LITERAL, *val, *dst],
+            }
+            Instruction::BSR(src, dst) => match src {
+                Arg::Register(reg) => vec![BSR_REGISTER, *reg, *dst],
+                Arg::Value(val) => vec![BSR_LITERAL, *val, *dst],
+            }
+            Instruction::INC(src) => vec![INC, *src],
+            Instruction::DEC(src) => vec![DEC, *src],
         }
     }
 }
