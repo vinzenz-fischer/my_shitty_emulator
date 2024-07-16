@@ -28,6 +28,4 @@ fn main() {
     while !emulator.is_halted {
         emulator.step();
     }
-
-    // emulator.print_memory();
 }
