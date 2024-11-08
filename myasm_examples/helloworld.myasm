@@ -1,0 +1,16 @@
+push 13
+push 'H'
+push 'e'
+push 'l'
+push 'l'
+push 'o'
+push ','
+push ' '
+push 'W'
+push 'o'
+push 'r'
+push 'l'
+push 'd'
+push '!'
+debug 0 33
+halt

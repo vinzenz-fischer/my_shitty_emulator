@@ -1,4 +1,4 @@
-use super::Instruction;
+use crate::{AssemblerError, Assembler};
 
 pub struct Program {
     bytecode: Vec<u8>,
@@ -6,24 +6,23 @@ pub struct Program {
 
 impl Program {
     pub fn new() -> Self {
-        Self { bytecode: vec![] }
+        Self { bytecode: Vec::new() }
     }
-
-    pub fn from_instructions(instructions: Vec<Instruction>) -> Self {
-        let mut program = Program::new();
-        for instruction in instructions {
-            program.add_instruction(instruction);
-        }
-        program
-    }
-    
-    pub fn add_instruction(&mut self, instruction: Instruction) {
-        for byte in instruction.assemble() {
-            self.bytecode.push(byte);
-        }
-    }
-
+            
     pub fn get_bytecode(&self) -> &Vec<u8> {
         &self.bytecode
+    }
+
+    pub fn from_assembly(assembly: &str) -> Result<Program, Vec<AssemblerError>> {
+        match Assembler::assemble(assembly) {
+            Ok(bytecode) => Ok(
+                Self::from_raw_bytes(bytecode)
+            ),
+            Err(problems) => Err(problems)
+        }
+    }
+    
+    fn from_raw_bytes(bytecode: Vec<u8>) -> Self {
+        Self { bytecode }
     }
 }

@@ -1,0 +1,31 @@
+/* Multiply program
+a * b = a+a+...+a
+        |_______|
+         b times
+* /
+//
+@asd
+This program expects `a` be in `R1` and `b` to be in `R2`.
+*/
+
+// for testing we manually set R1 and R2
+mov 2 R1
+mov 3 R2
+
+// acutally do the multiplying
+@iteration
+add R2 R3
+dec R1
+jifz R1 @iteration
+
+// print calculation and result
+push 5 // length
+add  48  r1
+push r1
+push '*'
+add  48  r2
+push r2
+push '='
+add  48  r3
+push r3
+debug 0  0
