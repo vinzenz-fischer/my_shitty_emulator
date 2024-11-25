@@ -1,10 +1,7 @@
 use my_shitty_emulator::*;
 
 fn main() {
-    let assembly = {
-        let contents = std::fs::read("myasm_examples/helloworld.myasm").expect("Failed to read file.");
-        String::from_utf8(contents).expect("File contains non-UTF-8 bytes.")
-    };
+    let assembly = std::fs::read_to_string("myasm_examples/helloworld.myasm").expect("Failed to read file.");
 
     match Program::from_assembly(&assembly.as_str())
     {
