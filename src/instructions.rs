@@ -1,6 +1,35 @@
+/* I got an idea
+struct Instruction {
+    name: String,
+    args: Vec<Arg>,
+    opcode: u8,
+    micro_instructions: Vec<...>, // this should replace `opcode` later
+}
+
+How do you declare new Instructions?
+> `const MOVE_LITERAL: Instruction = Instruction::new("MOVE", [Arg::Any, Arg::Register], ...);`
+> Maybe even load the instructions from markdown file table??
+
+Now how would you do the `match instruction {...}` in the emulator?
+> Microcode might be able to fix this
+> Check opcode `instructions::MOVE_LITERAL.opcode => {...}`
+
+How do I ensure unique opcodes?
+> Could you check this at compile time using a macro?
+*/
+
 pub enum Arg {
     Register,
     Any,
+}
+
+impl Clone for Arg {
+    fn clone(&self) -> Self {
+        match self {
+            Self::Register => Self::Register,
+            Self::Any => Self::Any,
+        }
+    }
 }
 
 pub enum Instruction {
