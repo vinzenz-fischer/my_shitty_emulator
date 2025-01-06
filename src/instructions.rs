@@ -3,35 +3,30 @@ struct Instruction {
     name: String,
     args: Vec<Arg>,
     opcode: u8,
-    micro_instructions: Vec<...>, // this should replace `opcode` later
+    micro_instructions: Vec<…>, // this should replace `opcode` later
 }
 
 How do you declare new Instructions?
-> `const MOVE_LITERAL: Instruction = Instruction::new("MOVE", [Arg::Any, Arg::Register], ...);`
+> `const MOVE_LITERAL: Instruction = Instruction::new("MOVE", [Arg::Any, Arg::Register], …);`
 > Maybe even load the instructions from markdown file table??
 
-Now how would you do the `match instruction {...}` in the emulator?
+Now how would you do the `match instruction {…}` in the emulator?
 > Microcode might be able to fix this
-> Check opcode `instructions::MOVE_LITERAL.opcode => {...}`
+> Check opcode `instructions::MOVE_LITERAL.opcode => {…}`
 
 How do I ensure unique opcodes?
 > Could you check this at compile time using a macro?
 */
 
+use crate::opcodes;
+
+#[derive(Debug, Copy, Clone)]
 pub enum Arg {
     Register,
     Any,
 }
 
-impl Clone for Arg {
-    fn clone(&self) -> Self {
-        match self {
-            Self::Register => Self::Register,
-            Self::Any => Self::Any,
-        }
-    }
-}
-
+#[derive(Debug, Copy, Clone)]
 pub enum Instruction {
     DEBUG, // print out stuff for example
     NOOP, HALT,
@@ -52,35 +47,35 @@ pub enum Instruction {
 
 impl std::fmt::Display for Instruction {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{:^16}",
+        write!(f, "{:}",
             match self {
-                Instruction::DEBUG => "Instruction::DEBUG",
-                Instruction::NOOP => "Instruction::NOOP",
-                Instruction::HALT => "Instruction::HALT",
-                Instruction::MOVE => "Instruction::MOVE",
-                Instruction::SMEM => "Instruction::SMEM",
-                Instruction::LMEM => "Instruction::LMEM",
-                Instruction::PUSH => "Instruction::PUSH",
-                Instruction::POP  => "Instruction::POP",
-                Instruction::CALL => "Instruction::CALL",
-                Instruction::RET  => "Instruction::RET",
-                Instruction::JUMP => "Instruction::JUMP",
-                Instruction::MOD  => "Instruction::MOD",
-                Instruction::NOT  => "Instruction::NOT",
-                Instruction::ADD  => "Instruction::ADD",
-                Instruction::SUB  => "Instruction::SUB",
-                Instruction::MUL  => "Instruction::MUL",
-                Instruction::DIV  => "Instruction::DIV",
-                Instruction::AND  => "Instruction::AND",
-                Instruction::NAND => "Instruction::NAND",
-                Instruction::OR   => "Instruction::OR",
-                Instruction::NOR  => "Instruction::NOR",
-                Instruction::XOR  => "Instruction::XOR",
-                Instruction::XNOR => "Instruction::XNOR",
-                Instruction::BSL  => "Instruction::BSL",
-                Instruction::BSR  => "Instruction::BSR",
-                Instruction::INC  => "Instruction::INC",
-                Instruction::DEC  => "Instruction::DEC",
+                Instruction::DEBUG => "DEBUG",
+                Instruction::NOOP => "NOOP",
+                Instruction::HALT => "HALT",
+                Instruction::MOVE => "MOVE",
+                Instruction::SMEM => "SMEM",
+                Instruction::LMEM => "LMEM",
+                Instruction::PUSH => "PUSH",
+                Instruction::POP  => "POP",
+                Instruction::CALL => "CALL",
+                Instruction::RET  => "RET",
+                Instruction::JUMP => "JUMP",
+                Instruction::MOD  => "MOD",
+                Instruction::NOT  => "NOT",
+                Instruction::ADD  => "ADD",
+                Instruction::SUB  => "SUB",
+                Instruction::MUL  => "MUL",
+                Instruction::DIV  => "DIV",
+                Instruction::AND  => "AND",
+                Instruction::NAND => "NAND",
+                Instruction::OR   => "OR",
+                Instruction::NOR  => "NOR",
+                Instruction::XOR  => "XOR",
+                Instruction::XNOR => "XNOR",
+                Instruction::BSL  => "BSL",
+                Instruction::BSR  => "BSR",
+                Instruction::INC  => "INC",
+                Instruction::DEC  => "DEC",
             }
         )
     }
@@ -152,9 +147,35 @@ impl Instruction {
         }
     }
 
-    pub fn to_opcode(&self) -> Result<u8, ()> {
+    pub fn to_opcode(&self) -> Option<u8> {
         match self {
-            _ => todo!("{}::to_opcode()", self)
+            Instruction::DEBUG => Some(opcodes::DEBUG),
+            Instruction::NOOP => Some(opcodes::NOOP),
+            Instruction::HALT => Some(opcodes::HALT),
+            Instruction::MOVE => Some(opcodes::MOVE),
+            Instruction::SMEM => Some(opcodes::SMEM),
+            Instruction::LMEM => Some(opcodes::LMEM),
+            Instruction::PUSH => Some(opcodes::PUSH),
+            Instruction::POP  => Some(opcodes::POP),
+            Instruction::CALL => Some(opcodes::CALL),
+            Instruction::RET  => Some(opcodes::RET),
+            Instruction::JUMP => Some(opcodes::JUMP),
+            Instruction::MOD  => Some(opcodes::MOD),
+            Instruction::NOT  => Some(opcodes::NOT),
+            Instruction::ADD  => Some(opcodes::ADD),
+            Instruction::SUB  => Some(opcodes::SUB),
+            Instruction::MUL  => Some(opcodes::MUL),
+            Instruction::DIV  => Some(opcodes::DIV),
+            Instruction::AND  => Some(opcodes::AND),
+            Instruction::NAND => Some(opcodes::NAND),
+            Instruction::OR   => Some(opcodes::OR),
+            Instruction::NOR  => Some(opcodes::NOR),
+            Instruction::XOR  => Some(opcodes::XOR),
+            Instruction::XNOR => Some(opcodes::XNOR),
+            Instruction::BSL  => Some(opcodes::BSL),
+            Instruction::BSR  => Some(opcodes::BSR),
+            Instruction::INC  => Some(opcodes::INC),
+            Instruction::DEC  => Some(opcodes::DEC),
         }
     }
 }
